@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Warship Racing - BGM Update</title>
+    <title>Warship Racing - Windy Edition</title>
     
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
@@ -13,73 +13,59 @@
         #game-container { position: relative; width: 100vw; height: 100vh; background: linear-gradient(#0077be, #004d99); transition: background 2s; }
         canvas { display: block; position: absolute; top:0; left:0; }
         
+        /* UI GAME */
         #ui { position: absolute; top: 15px; left: 20px; color: white; font-size: 20px; font-weight: bold; z-index: 20; text-shadow: 2px 2px #000; display: none; }
         #coin-ui { color: #ffdd00; margin-top: 5px; }
         #player-hp-container { width: 250px; height: 15px; border: 2px solid #fff; background: #333; margin-top: 10px; border-radius: 8px; overflow: hidden; box-shadow: 0 0 5px #000; }
-        #player-hp-fill { width: 100%; height: 100%; background: #00ffaa; transition: width 0.2s, background 0.2s; }
+        #player-hp-fill { width: 100%; height: 100%; background: #00ffaa; transition: width 0.2s; }
         #cooldown-ui { color: #00fbff; margin-top: 5px; font-size: 16px; display: none; }
         
+        /* BOSS UI */
         #boss-warning { position: absolute; top: 20%; left: 50%; transform: translateX(-50%); color: #ff0000; font-size: 40px; font-weight: bold; text-shadow: 0 0 10px #ff0000, 2px 2px #000; display: none; z-index: 50; animation: blink 1s infinite; text-align: center;}
         @keyframes blink { 0% { opacity: 1; } 50% { opacity: 0; } 100% { opacity: 1; } }
-
         #boss-hp-container { position: absolute; top: 20px; left: 50%; transform: translateX(-50%); width: 400px; height: 20px; border: 2px solid #fff; background: #333; display: none; z-index: 20; border-radius: 10px; overflow: hidden; }
         #boss-hp-fill { width: 100%; height: 100%; background: #ff0000; transition: width 0.1s; }
-        #boss-name { position: absolute; top: -25px; left: 50%; transform: translateX(-50%); color: white; font-weight: bold; text-shadow: 1px 1px #000; width: 100%; text-align: center; }
         
+        /* KONTROL */
         #controls { position: absolute; right: 30px; bottom: 30px; display: none; flex-direction: column; gap: 20px; z-index: 100; }
         #action-controls { position: absolute; left: 30px; bottom: 30px; display: none; gap: 20px; z-index: 100; }
-
-        .btn { width: 80px; height: 80px; background: rgba(255, 255, 255, 0.2); border-radius: 50%; display: flex; justify-content: center; align-items: center; color: white; font-size: 35px; border: 4px solid white; cursor: pointer; pointer-events: auto; backdrop-filter: blur(5px); }
+        .btn { width: 80px; height: 80px; background: rgba(255, 255, 255, 0.2); border-radius: 50%; display: flex; justify-content: center; align-items: center; color: white; font-size: 35px; border: 4px solid white; cursor: pointer; backdrop-filter: blur(5px); }
         .btn:active { background: rgba(255, 255, 255, 0.6); transform: scale(0.9); }
-        .btn-disabled { opacity: 0.5; pointer-events: none; filter: grayscale(100%); }
+        .btn-disabled { opacity: 0.3; pointer-events: none; }
         
+        /* MENU SCREEN */
         .menu-screen { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 26, 51, 0.95); display: flex; flex-direction: column; justify-content: center; align-items: center; z-index: 200; color: white; text-align: center; }
         .hidden { display: none !important; }
+        h1 { font-size: 36px; margin-bottom: 5px; text-shadow: 3px 3px #000; color: #00fbff; }
+        .menu-btn { padding: 10px 25px; font-size: 16px; font-weight: bold; margin: 6px; color: white; border: 3px solid #fff; border-radius: 12px; cursor: pointer; transition: 0.2s; width: 220px; border: none; }
+        .primary-btn { background: #ff4444; } .secondary-btn { background: #0077be; } .gold-btn { background: #d4af37; } .green-btn { background: #28a745; }
         
-        h1 { font-size: 36px; margin-bottom: 5px; text-shadow: 3px 3px #000; color: #00fbff; letter-spacing: 2px; }
-        p { font-size: 18px; margin-bottom: 20px; color: #ddd; }
-        
-        .menu-btn { padding: 10px 25px; font-size: 16px; font-weight: bold; margin: 6px; color: white; border: 3px solid #fff; border-radius: 12px; cursor: pointer; box-shadow: 0 5px 15px rgba(0,0,0,0.5); transition: 0.2s; width: 220px; }
-        .primary-btn { background: #ff4444; } .secondary-btn { background: #0077be; } .gold-btn { background: #d4af37; color: #000; border-color: #ffd700; } .green-btn { background: #28a745; }
-        
-        .admin-btn { background: #8b0000; color: white; border-color: #ff4444; animation: pulse 2s infinite; }
-        @keyframes pulse { 0% { box-shadow: 0 0 0 0 rgba(255,0,0,0.7); } 70% { box-shadow: 0 0 0 10px rgba(255,0,0,0); } 100% { box-shadow: 0 0 0 0 rgba(255,0,0,0); } }
-        
-        .menu-btn:active { transform: scale(0.95); }
-        .btn-row { display: flex; gap: 10px; justify-content: center; }
-
-        input { padding: 12px; margin: 10px; width: 200px; font-size: 16px; border-radius: 8px; border: 2px solid #00fbff; background: #001a33; color: white; text-align: center; outline: none; }
+        /* DATA BOXES */
+        input { padding: 12px; margin: 10px; width: 200px; border-radius: 8px; border: 2px solid #00fbff; background: #001a33; color: white; text-align: center; outline: none; }
         .data-box { background: rgba(0,0,0,0.6); border: 2px solid #00fbff; border-radius: 10px; width: 340px; max-height: 250px; overflow-y: auto; margin-bottom: 20px; padding: 15px; }
         .shop-item { display: flex; justify-content: space-between; align-items: center; background: rgba(255,255,255,0.1); padding: 10px; margin-bottom: 10px; border-radius: 8px; }
-        .shop-item h3 { margin: 0 0 5px 0; font-size: 16px; color: #00fbff; text-align: left;}
-        .shop-item p { margin: 0; font-size: 12px; color: #ffdd00; text-align: left;}
-        .buy-btn { padding: 6px 12px; font-size: 12px; font-weight: bold; border-radius: 5px; cursor: pointer; border: none; }
-        .btn-buy { background: #28a745; color: white; } .btn-equip { background: #007bff; color: white; } .btn-equipped { background: #6c757d; color: white; cursor: not-allowed; }
         
-        #loading-overlay { position: absolute; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.8); z-index:999; display:none; justify-content:center; align-items:center; color:#00fbff; font-size:24px; font-weight:bold; }
-
-        /* CREDIT BARU DI TENGAH BAWAH */
+        /* CREDIT TENGAH BAWAH */
         #corner-credits {
             position: absolute;
-            bottom: 10px;
+            bottom: 12px;
             left: 50%;
             transform: translateX(-50%);
-            color: rgba(255, 255, 255, 0.4);
-            font-size: 11px;
+            color: rgba(255, 255, 255, 0.5);
+            font-size: 12px;
             z-index: 300;
             text-align: center;
             pointer-events: none;
             text-shadow: 1px 1px #000;
-            white-space: nowrap;
         }
         #corner-credits strong { color: #00fbff; }
 
-        /* PERINGATAN LANDSCAPE */
+        /* OVERLAY LANDSCAPE UNTUK HP */
         #landscape-msg {
             display: none;
             position: fixed;
             top: 0; left: 0; width: 100vw; height: 100vh;
-            background: #000;
+            background: #001a33;
             color: white;
             z-index: 10000;
             flex-direction: column;
@@ -87,114 +73,90 @@
             align-items: center;
             text-align: center;
         }
-
-        /* Tampilkan pesan hanya jika layar portrait dan lebar layar kecil (HP) */
         @media screen and (orientation: portrait) {
             #landscape-msg { display: flex; }
         }
+
+        #loading-overlay { position: absolute; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.8); z-index:999; display:none; justify-content:center; align-items:center; color:#00fbff; font-size:20px; }
     </style>
 </head>
 <body>
+
     <div id="landscape-msg">
-        <div style="font-size: 50px;">🔄</div>
-        <h2 style="color: #00fbff;">Mohon Miringkan HP Anda</h2>
-        <p>Game ini lebih seru dimainkan dalam mode Landscape!</p>
+        <div style="font-size: 60px; margin-bottom: 20px;">🔄</div>
+        <h2 style="color: #00fbff;">MODE LANDSCAPE DIBUTUHKAN</h2>
+        <p>Silakan miringkan HP Anda untuk bermain.</p>
     </div>
 
     <div id="game-container">
-        <div id="loading-overlay">Menghubungkan ke Server...</div>
+        <div id="loading-overlay">Menghubungkan...</div>
 
         <div id="corner-credits">
-            Dev: <strong>@windy</strong>
+            Game Developer: <strong>@windy</strong>
         </div>
 
         <audio id="sfx-shoot" src="https://assets.mixkit.co/active_storage/sfx/2771/2771-preview.mp3" preload="auto"></audio>
         <audio id="sfx-exp" src="https://assets.mixkit.co/active_storage/sfx/2772/2772-preview.mp3" preload="auto"></audio>
-        
         <audio id="bgm-menu" src="https://www.soundhelix.com/examples/mp3/SoundHelix-Song-15.mp3" loop preload="auto"></audio>
         <audio id="bgm-game" src="https://www.soundhelix.com/examples/mp3/SoundHelix-Song-14.mp3" loop preload="auto"></audio>
 
         <div id="auth-menu" class="menu-screen">
-            <h1 id="authTitleText">WARSHIP RACING</h1>
-            <p id="authDescText">Login to save your score & money!</p>
-            <input type="text" id="usernameInput" placeholder="Username" autocomplete="off">
+            <h1>WARSHIP RACING</h1>
+            <p>Login to save progress</p>
+            <input type="text" id="usernameInput" placeholder="Username">
             <input type="password" id="passwordInput" placeholder="Password">
             <button id="loginBtn" class="menu-btn primary-btn">LOGIN</button>
             <button id="registerBtn" class="menu-btn secondary-btn">REGISTER</button>
-            <p id="authMsg" style="color: #ff4444; font-size: 16px; margin-top: 15px;"></p>
+            <p id="authMsg" style="color: #ff4444; margin-top: 10px;"></p>
         </div>
 
         <div id="main-menu" class="menu-screen hidden">
             <h1 id="menuTitleText">MAIN MENU</h1>
-            <p><span id="menuCaptText">Captain</span> <strong id="playerName" style="color:#00fbff;"></strong></p>
-            <p style="color:#ffdd00; font-size:22px; font-weight:bold;"><span id="menuMoneyText">Money: $</span><span id="menuMoney">0</span></p>
+            <p>Captain: <strong id="playerName" style="color:#00fbff;"></strong></p>
+            <p style="color:#ffdd00; font-size:22px;">Money: $<span id="menuMoney">0</span></p>
             <button id="startBtn" class="menu-btn primary-btn">START GAME</button>
-            <button id="shopBtn" class="menu-btn gold-btn">GARAGE / SHOP</button>
+            <button id="shopBtn" class="menu-btn gold-btn">SHIP GARAGE</button>
             <button id="upgBtn" class="menu-btn green-btn">UPGRADES</button>
             <button id="showLbBtn" class="menu-btn secondary-btn">LEADERBOARD</button>
-            <button id="adminBtn" class="menu-btn admin-btn hidden">⚙️ ADMIN PANEL ⚙️</button>
-            <button id="langBtn" class="menu-btn secondary-btn" style="width: 220px;">LANG: ID</button>
-            <button id="logoutBtn" class="menu-btn" style="background: #555; margin-top: 10px;">LOGOUT</button>
+            <button id="langBtn" class="menu-btn secondary-btn">LANG: ID</button>
+            <button id="logoutBtn" class="menu-btn" style="background: #555;">LOGOUT</button>
         </div>
 
-        <div id="admin-menu" class="menu-screen hidden">
-            <h1 style="color:#ff4444;">⚙️ ADMIN PANEL</h1>
-            <input type="text" id="adminTargetUser" placeholder="Username Target">
-            <input type="number" id="adminAmount" placeholder="Jumlah Uang ($)">
-            <button id="giveMoneyBtn" class="menu-btn green-btn">BERIKAN UANG</button>
-            <p id="adminMsg" style="margin-top:10px; font-weight:bold;"></p>
-            <button id="closeAdminBtn" class="menu-btn secondary-btn" style="margin-top:20px;">KEMBALI</button>
+        <div id="shop-menu" class="menu-screen hidden">
+            <h1 style="color:#d4af37;">GARAGE</h1>
+            <div class="data-box" id="shop-box"></div>
+            <button id="closeShopBtn" class="menu-btn secondary-btn">BACK</button>
         </div>
 
         <div id="upgrade-menu" class="menu-screen hidden">
-            <h1 id="upgTitleText" style="color:#00ffaa;">UPGRADES</h1>
-            <p style="color:#ffdd00; font-weight:bold;"><span id="upgMoneyText">Your Money: $</span><span id="upgMoney">0</span></p>
-            <div class="data-box" id="upg-box">
+            <h1 style="color:#00ffaa;">UPGRADES</h1>
+            <div class="data-box">
                 <div class="shop-item">
-                    <div><h3 id="upgAccText">Accuracy (Auto-Aim)</h3><p id="upgAccLvl">Lvl 0/5</p></div>
-                    <button id="buyUpgAcc" class="buy-btn btn-buy">Buy $1200</button>
+                    <div><h3>Accuracy</h3><p id="upgAccLvl">Lvl 0</p></div>
+                    <button id="buyUpgAcc" class="menu-btn green-btn" style="width:100px;">Buy</button>
                 </div>
                 <div class="shop-item">
-                    <div><h3 id="upgFireText">Fire Rate</h3><p id="upgFireLvl">Lvl 0/5</p></div>
-                    <button id="buyUpgFire" class="buy-btn btn-buy">Buy $1000</button>
-                </div>
-                <div class="shop-item">
-                    <div><h3 id="upgCoinText">Coin Multiplier</h3><p id="upgCoinLvl">Lvl 0/5</p></div>
-                    <button id="buyUpgCoin" class="buy-btn btn-buy">Buy $1500</button>
+                    <div><h3>Fire Rate</h3><p id="upgFireLvl">Lvl 0</p></div>
+                    <button id="buyUpgFire" class="menu-btn green-btn" style="width:100px;">Buy</button>
                 </div>
             </div>
             <button id="closeUpgBtn" class="menu-btn secondary-btn">BACK</button>
         </div>
 
         <div id="game-over-menu" class="menu-screen hidden">
-            <h1 id="goTitleText" style="color: #ff4444;">SHIP DESTROYED!</h1>
-            <p id="gameOverDesc" style="font-size: 20px; color: #ffdd00; font-weight: bold;"></p>
+            <h1 style="color: #ff4444;">SHIP DESTROYED!</h1>
+            <p id="gameOverDesc"></p>
             <button id="retryBtn" class="menu-btn primary-btn">PLAY AGAIN</button>
             <button id="backToMenuBtn" class="menu-btn secondary-btn">MAIN MENU</button>
         </div>
 
-        <div id="shop-menu" class="menu-screen hidden">
-            <h1 id="shopTitleText" style="color:#d4af37;">SHIP GARAGE</h1>
-            <p style="color:#ffdd00; font-weight:bold;"><span id="shopMoneyText">Your Money: $</span><span id="shopMoney">0</span></p>
-            <div class="data-box" id="shop-box"></div>
-            <button id="closeShopBtn" class="menu-btn secondary-btn">BACK</button>
-        </div>
-
-        <div id="leaderboard-menu" class="menu-screen hidden">
-            <h1 id="lbTitleText">GLOBAL LEADERBOARD</h1>
-            <div class="data-box" id="leaderboard-box"></div>
-            <button id="closeLbBtn" class="menu-btn secondary-btn">BACK</button>
-        </div>
-
-        <div id="boss-warning">⚠️ WARNING:<br>BOSS APPROACHING ⚠️</div>
-        <div id="boss-hp-container"><div id="boss-name">NUCLEAR SUBMARINE</div><div id="boss-hp-fill"></div></div>
-
         <div id="ui">
-            <div><span id="uiScoreText">SCORE: </span><span id="score">0</span></div>
-            <div id="coin-ui"><span id="uiMoneyText">MONEY: $</span><span id="game-money">0</span></div>
+            <div>SCORE: <span id="score">0</span></div>
+            <div id="coin-ui">MONEY: $<span id="game-money">0</span></div>
             <div id="player-hp-container"><div id="player-hp-fill"></div></div>
-            <div id="cooldown-ui">Skill: Ready!</div>
+            <div id="cooldown-ui">Ready!</div>
         </div>
+
         <canvas id="gameCanvas"></canvas>
         
         <div id="controls">
@@ -202,269 +164,181 @@
             <div id="downBtn" class="btn">▼</div>
         </div>
         <div id="action-controls">
-            <div id="skillBtn" class="btn hidden" style="background: rgba(0, 251, 255, 0.4);">⚡</div>
-            <div id="cobraBtn" class="btn hidden" style="background: rgba(255, 100, 0, 0.4);">✈️</div>
+            <div id="skillBtn" class="btn hidden">⚡</div>
+            <div id="cobraBtn" class="btn hidden">✈️</div>
         </div>
+
+        <div id="boss-warning">⚠️ WARNING: BOSS ⚠️</div>
+        <div id="boss-hp-container"><div id="boss-hp-fill"></div></div>
     </div>
 
     <script>
-        // ================= LOCK ORIENTATION LOGIC =================
-        function lockLandscape() {
-            if (document.documentElement.requestFullscreen) {
-                document.documentElement.requestFullscreen().then(() => {
-                    if (screen.orientation && screen.orientation.lock) {
-                        screen.orientation.lock("landscape").catch(err => console.log("Orientation lock failed: ", err));
-                    }
-                }).catch(err => console.log("Fullscreen failed: ", err));
-            }
-        }
-
-        // ================= INISIALISASI FIREBASE =================
+        // ================= CONFIG & ORIENTATION =================
         const firebaseConfig = { databaseURL: "https://warshiprace-default-rtdb.firebaseio.com/" };
         firebase.initializeApp(firebaseConfig);
         const db = firebase.database();
 
-        function showLoading() { document.getElementById('loading-overlay').style.display = 'flex'; }
-        function hideLoading() { document.getElementById('loading-overlay').style.display = 'none'; }
+        function forceLandscape() {
+            if (document.documentElement.requestFullscreen) {
+                document.documentElement.requestFullscreen().then(() => {
+                    if (screen.orientation && screen.orientation.lock) {
+                        screen.orientation.lock("landscape").catch(() => {});
+                    }
+                }).catch(() => {});
+            }
+        }
 
         // ================= AUDIO =================
         const bgmMenu = document.getElementById("bgm-menu");
         const bgmGame = document.getElementById("bgm-game");
-        bgmMenu.volume = 0.3; bgmGame.volume = 0.3;
-
         function switchBGM(mode) {
-            if (mode === "menu") {
-                bgmGame.pause(); bgmMenu.currentTime = 0;
-                let playPromise = bgmMenu.play(); if(playPromise !== undefined) playPromise.catch(e => {});
-            } else if (mode === "game") {
-                bgmMenu.pause(); bgmGame.currentTime = 0;
-                let playPromise = bgmGame.play(); if(playPromise !== undefined) playPromise.catch(e => {});
-            } else if (mode === "stop") {
-                bgmMenu.pause(); bgmGame.pause();
-            }
+            bgmMenu.pause(); bgmGame.pause();
+            if(mode === "menu") bgmMenu.play().catch(()=>{});
+            else if(mode === "game") bgmGame.play().catch(()=>{});
         }
 
-        let sfxShoot = document.getElementById("sfx-shoot"); let sfxExp = document.getElementById("sfx-exp");
-        function playSfx(aud) { let a = aud.cloneNode(); a.volume = 0.4; a.play().catch(()=>{}); }
-
-        // ================= LANGUAGE =================
-        const langMap = {
-            EN: {
-                authTitle: "WARSHIP RACING", authDesc: "Login to save your score & money!", btnLogin: "LOGIN", btnRegister: "REGISTER",
-                menuTitle: "MAIN MENU", menuCapt: "Captain ", menuMoney: "Money: $",
-                btnStart: "START GAME", btnShop: "GARAGE", btnUpg: "UPGRADES", btnLb: "LEADERBOARD", btnLang: "LANG: EN", btnLogout: "LOGOUT",
-                shopTitle: "SHIP GARAGE", shopMoney: "Your Money: $", btnBackShop: "BACK",
-                upgTitle: "UPGRADES", upgMoney: "Your Money: $", upgFire: "Fire Rate", upgCoin: "Coin Multiplier", upgAcc: "Accuracy",
-                lbTitle: "GLOBAL LEADERBOARD", lbEmpty: "No scores yet.", btnBackLb: "BACK",
-                goTitle: "SHIP DESTROYED!", btnRetry: "PLAY AGAIN", btnBackMenu: "MAIN MENU", goDescTemplate: "Score: {s} | Money Earned: ${m}",
-                uiScore: "SCORE: ", uiMoney: "MONEY: $",
-                txtSpeed: "Speed", txtPrice: "Price", txtSkill: "Skill", btnEquip: "Equip", btnEquipped: "Equipped", btnBuy: "Buy", btnMax: "MAX",
-                msgNoMoney: "Not enough money!", msgFill: "Fill username & password!", msgExist: "Username taken!", msgRegOk: "Register success! Please Login.", msgFail: "Wrong Credentials!"
-            },
-            ID: {
-                authTitle: "KAPAL TEMPUR", authDesc: "Login untuk menyimpan skor & uangmu global!", btnLogin: "MASUK", btnRegister: "DAFTAR",
-                menuTitle: "MENU UTAMA", menuCapt: "Kapten ", menuMoney: "Uang: $",
-                btnStart: "MULAI GAME", btnShop: "GARASI", btnUpg: "UPGRADE", btnLb: "PAPAN SKOR", btnLang: "BHS: ID", btnLogout: "KELUAR",
-                shopTitle: "GARASI KAPAL", shopMoney: "Uang Kamu: $", btnBackShop: "KEMBALI",
-                upgTitle: "UPGRADE KAPAL", upgMoney: "Uang Kamu: $", upgFire: "Kecepatan Tembak", upgCoin: "Bonus Uang", upgAcc: "Akurasi Rudal",
-                lbTitle: "PAPAN SKOR GLOBAL", lbEmpty: "Belum ada skor.", btnBackLb: "KEMBALI",
-                goTitle: "KAPAL HANCUR!", btnRetry: "MAIN LAGI", btnBackMenu: "MENU UTAMA", goDescTemplate: "Skor: {s} | Uang Didapat: ${m}",
-                uiScore: "SKOR: ", uiMoney: "UANG: $",
-                txtSpeed: "Kecepatan", txtPrice: "Harga", txtSkill: "Skill", btnEquip: "Pakai", btnEquipped: "Dipakai", btnBuy: "Beli", btnMax: "MAX",
-                msgNoMoney: "Uang tidak cukup!", msgFill: "Isi username & password!", msgExist: "Username sudah dipakai!", msgRegOk: "Daftar sukses! Silakan Login.", msgFail: "Username atau Password salah!"
-            }
-        };
-
-        let currentLang = localStorage.getItem('speedBoatLang') || 'ID';
-        
-        function applyLanguage() {
-            const l = langMap[currentLang];
-            document.getElementById("authTitleText").innerText = l.authTitle; document.getElementById("authDescText").innerText = l.authDesc;
-            document.getElementById("loginBtn").innerText = l.btnLogin; document.getElementById("registerBtn").innerText = l.btnRegister;
-            document.getElementById("menuTitleText").innerText = l.menuTitle; document.getElementById("menuCaptText").innerText = l.menuCapt;
-            document.getElementById("menuMoneyText").innerText = l.menuMoney;
-            document.getElementById("startBtn").innerText = l.btnStart; document.getElementById("shopBtn").innerText = l.btnShop; document.getElementById("upgBtn").innerText = l.btnUpg;
-            document.getElementById("showLbBtn").innerText = l.btnLb; document.getElementById("langBtn").innerText = l.btnLang; document.getElementById("logoutBtn").innerText = l.btnLogout;
-            document.getElementById("shopTitleText").innerText = l.shopTitle; document.getElementById("shopMoneyText").innerText = l.shopMoney; document.getElementById("closeShopBtn").innerText = l.btnBackShop;
-            document.getElementById("upgTitleText").innerText = l.upgTitle; document.getElementById("upgMoneyText").innerText = l.upgMoney; document.getElementById("upgFireText").innerText = l.upgFire; document.getElementById("upgCoinText").innerText = l.upgCoin; document.getElementById("upgAccText").innerText = l.upgAcc; document.getElementById("closeUpgBtn").innerText = l.btnBackShop;
-            document.getElementById("lbTitleText").innerText = l.lbTitle; document.getElementById("closeLbBtn").innerText = l.btnBackLb;
-            document.getElementById("goTitleText").innerText = l.goTitle; document.getElementById("retryBtn").innerText = l.btnRetry; document.getElementById("backToMenuBtn").innerText = l.btnBackMenu;
-            document.getElementById("uiScoreText").innerText = l.uiScore; document.getElementById("uiMoneyText").innerText = l.uiMoney;
-            if(currentUser) { renderShop(); renderUpgrades(); }
-        }
-
-        document.getElementById("langBtn").addEventListener("click", () => {
-            currentLang = currentLang === 'EN' ? 'ID' : 'EN';
-            localStorage.setItem('speedBoatLang', currentLang); applyLanguage();
-        });
-
-        // ================= DATA KAPAL =================
+        // ================= DATA =================
         const shipData = [
-            { id: 0, name: "Speedboat Klasik", price: 0, w: 120, h: 40, speed: 8, hp: 100, skill: "DASH", icon: "⚡", cd: 3 },
-            { id: 1, name: "Jet Ski", price: 500, w: 70, h: 30, speed: 10, hp: 60, skill: "BOOST", icon: "🔥", cd: 5 },
-            { id: 2, name: "Kapal Bajak Laut", price: 2500, w: 160, h: 120, speed: 6, hp: 200, skill: "CANNON", icon: "💣", cd: 4 },
-            { id: 3, name: "Luxury Yacht", price: 7500, w: 180, h: 60, speed: 7, hp: 150, skill: "HEAL", icon: "🔧", cd: 10 },
-            { id: 5, name: "USS Arleigh Burke", price: 25000, w: 220, h: 60, speed: 6, hp: 250, skill: "SHOOT", icon: "🎯", cd: 0.5 },
-            { id: 4, name: "Jet Tempur Su-57", price: 50000, w: 150, h: 40, speed: 14, hp: 150, skill: "SHOOT", icon: "🎯", cd: 0.5, hasCobra: true },
-            { id: 6, name: "CVN-78 G. R. Ford", price: 99999999, w: 320, h: 90, speed: 5, hp: 500, skill: "AIRSTRIKE", icon: "🛩️", cd: 12, isAdmin: true } 
+            { id: 0, name: "Classic Boat", price: 0, w: 100, h: 30, speed: 7, hp: 100, skill: "DASH", icon: "⚡" },
+            { id: 4, name: "Su-57 Felon", price: 50000, w: 140, h: 40, speed: 13, hp: 150, skill: "SHOOT", icon: "🎯", hasCobra: true }
         ];
 
-        let userData = null; let currentUser = null;
-
-        function saveDB() { if(currentUser && userData) { db.ref('users/' + currentUser).set(userData); } }
-
-        function checkUserData() {
-            if (userData.money === undefined) userData.money = 0; if (!userData.owned) userData.owned = [0];
-            if (userData.equipped === undefined) userData.equipped = 0; if (userData.upgFire === undefined) userData.upgFire = 0;
-            if (userData.upgCoin === undefined) userData.upgCoin = 0; if (userData.upgAcc === undefined) userData.upgAcc = 0;
-            if (userData.highscore === undefined) userData.highscore = 0; saveDB();
-        }
+        let currentUser = null, userData = null;
 
         // ================= AUTH =================
-        document.getElementById("loginBtn").addEventListener("click", () => {
-            lockLandscape(); // Coba ubah landscape saat login
-            let u = usernameInput.value.trim(); let p = passwordInput.value.trim(); const l = langMap[currentLang];
-            if (!u || !p) return authMsg.innerText = l.msgFill;
-            showLoading();
-            db.ref('users/' + u).once('value').then(snap => {
-                hideLoading();
+        document.getElementById("loginBtn").onclick = () => {
+            forceLandscape();
+            let u = document.getElementById("usernameInput").value;
+            let p = document.getElementById("passwordInput").value;
+            if(!u || !p) return;
+            document.getElementById("loading-overlay").style.display = "flex";
+            db.ref('users/'+u).once('value').then(snap => {
+                document.getElementById("loading-overlay").style.display = "none";
                 if(snap.exists() && snap.val().password === p) {
-                    currentUser = u; userData = snap.val(); checkUserData();
-                    document.getElementById("playerName").innerText = currentUser;
-                    if (currentUser === "devloper") document.getElementById("adminBtn").classList.remove("hidden");
-                    updateMoneyDisplay(); switchBGM("menu"); switchMenu("main-menu");
-                } else { authMsg.style.color = "#ff4444"; authMsg.innerText = l.msgFail; }
+                    currentUser = u; userData = snap.val();
+                    document.getElementById("playerName").innerText = u;
+                    updateMoney(); switchBGM("menu"); switchMenu("main-menu");
+                }
             });
-        });
+        };
 
-        document.getElementById("registerBtn").addEventListener("click", () => {
-            let u = usernameInput.value.trim(); let p = passwordInput.value.trim(); const l = langMap[currentLang];
-            if (!u || !p) return authMsg.innerText = l.msgFill;
-            showLoading();
-            db.ref('users/' + u).once('value').then(snap => {
-                hideLoading();
-                if(snap.exists()) { authMsg.style.color = "#ff4444"; authMsg.innerText = l.msgExist; }
-                else { db.ref('users/' + u).set({ password: p, highscore: 0, money: 0, owned: [0], equipped: 0, upgFire: 0, upgCoin: 0, upgAcc: 0 }); authMsg.style.color = "#00ffaa"; authMsg.innerText = l.msgRegOk; }
-            });
-        });
+        document.getElementById("registerBtn").onclick = () => {
+            let u = document.getElementById("usernameInput").value;
+            let p = document.getElementById("passwordInput").value;
+            if(!u || !p) return;
+            db.ref('users/'+u).set({ password: p, money: 0, owned: [0], equipped: 0, highscore: 0, upgAcc: 0, upgFire: 0 });
+            alert("Success!");
+        };
 
-        document.getElementById("logoutBtn").addEventListener("click", () => { currentUser = null; userData = null; switchBGM("stop"); switchMenu("auth-menu"); });
-
-        function updateMoneyDisplay() { if(!currentUser) return; document.getElementById("menuMoney").innerText = userData.money; document.getElementById("shopMoney").innerText = userData.money; document.getElementById("upgMoney").innerText = userData.money; }
-
-        // ================= MENUS =================
-        function switchMenu(targetId) {
+        // ================= UI LOGIC =================
+        function switchMenu(id) {
             document.querySelectorAll('.menu-screen').forEach(s => s.classList.add("hidden"));
-            document.getElementById("ui").style.display = "none"; document.getElementById("controls").style.display = "none"; document.getElementById("action-controls").style.display = "none";
-            const cornerCreds = document.getElementById("corner-credits");
-            if (targetId === "game") { 
-                document.getElementById("ui").style.display = "block"; document.getElementById("controls").style.display = "flex"; document.getElementById("action-controls").style.display = "flex"; 
-                if(cornerCreds) cornerCreds.classList.add("hidden");
-                lockLandscape(); // Coba ubah landscape saat mulai game
+            document.getElementById("ui").style.display = "none";
+            document.getElementById("controls").style.display = "none";
+            document.getElementById("action-controls").style.display = "none";
+            const credits = document.getElementById("corner-credits");
+
+            if(id === "game") {
+                document.getElementById("ui").style.display = "block";
+                document.getElementById("controls").style.display = "flex";
+                document.getElementById("action-controls").style.display = "flex";
+                credits.style.display = "none"; 
             } else {
-                document.getElementById(targetId).classList.remove("hidden");
-                if(cornerCreds) cornerCreds.classList.remove("hidden");
+                document.getElementById(id).classList.remove("hidden");
+                credits.style.display = "block";
             }
         }
 
-        document.getElementById("shopBtn").addEventListener("click", () => { renderShop(); switchMenu("shop-menu"); });
-        document.getElementById("upgBtn").addEventListener("click", () => { renderUpgrades(); switchMenu("upgrade-menu"); });
-        document.getElementById("closeShopBtn").addEventListener("click", () => switchMenu("main-menu"));
-        document.getElementById("closeUpgBtn").addEventListener("click", () => switchMenu("main-menu"));
-        document.getElementById("closeLbBtn").addEventListener("click", () => switchMenu("main-menu"));
+        function updateMoney() { document.getElementById("menuMoney").innerText = userData.money; }
 
-        function renderShop() {
-            if(!currentUser) return; updateMoneyDisplay();
-            const shopBox = document.getElementById("shop-box"); shopBox.innerHTML = ""; const l = langMap[currentLang];
-            shipData.forEach(ship => {
-                if(ship.isAdmin && currentUser !== "devloper" && !userData.owned.includes(ship.id)) return; 
-                let div = document.createElement("div"); div.className = "shop-item";
-                let isOwned = userData.owned.includes(ship.id), isEquipped = userData.equipped === ship.id;
-                let btnHtml = isEquipped ? `<button class="buy-btn btn-equipped" disabled>${l.btnEquipped}</button>` : (isOwned ? `<button class="buy-btn btn-equip" onclick="equipShip(${ship.id})">${l.btnEquip}</button>` : `<button class="buy-btn btn-buy" onclick="buyShip(${ship.id}, ${ship.price})">${l.btnBuy} $${ship.price}</button>`);
-                div.innerHTML = `<div><h3>${ship.name}</h3><p>HP: ${ship.hp} | ${l.txtSpeed}: ${ship.speed} | Skill: ${ship.icon}</p></div><div>${btnHtml}</div>`;
-                shopBox.appendChild(div);
-            });
-        }
+        // ================= GAME ENGINE =================
+        const canvas = document.getElementById("gameCanvas");
+        const ctx = canvas.getContext("2d");
+        let animationId, gameActive = false, score = 0, earnedMoney = 0;
+        let boat = { x: 100, y: 0, w: 100, h: 30, speed: 7 };
+        let obstacles = [], bullets = [], particles = [], currentShip = null;
+        let moveUp = false, moveDown = false, hp = 100;
 
-        function renderUpgrades() {
-            if(!currentUser) return; updateMoneyDisplay();
-            const l = langMap[currentLang];
-            let accCost = 1200 + (userData.upgAcc * 800); document.getElementById("upgAccLvl").innerText = `Lvl ${userData.upgAcc}/5`;
-            let btnAcc = document.getElementById("buyUpgAcc"); if(userData.upgAcc >= 5) { btnAcc.innerText = l.btnMax; btnAcc.disabled = true; } else { btnAcc.innerText = `Buy $${accCost}`; btnAcc.onclick = () => buyUpg('acc', accCost); }
-            let fireCost = 1000 + (userData.upgFire * 500); document.getElementById("upgFireLvl").innerText = `Lvl ${userData.upgFire}/5`;
-            let btnFire = document.getElementById("buyUpgFire"); if(userData.upgFire >= 5) { btnFire.innerText = l.btnMax; btnFire.disabled = true; } else { btnFire.innerText = `Buy $${fireCost}`; btnFire.onclick = () => buyUpg('fire', fireCost); }
-            let coinCost = 1500 + (userData.upgCoin * 1000); document.getElementById("upgCoinLvl").innerText = `Lvl ${userData.upgCoin}/5`;
-            let btnCoin = document.getElementById("buyUpgCoin"); if(userData.upgCoin >= 5) { btnCoin.innerText = l.btnMax; btnCoin.disabled = true; } else { btnCoin.innerText = `Buy $${coinCost}`; btnCoin.onclick = () => buyUpg('coin', coinCost); }
-        }
-
-        window.buyShip = function(id, price) { if (userData.money >= price) { userData.money -= price; userData.owned.push(id); userData.equipped = id; saveDB(); renderShop(); } else alert("Money not enough!"); }
-        window.equipShip = function(id) { userData.equipped = id; saveDB(); renderShop(); }
-        window.buyUpg = function(type, price) { if (userData.money >= price) { userData.money -= price; if(type==='fire') userData.upgFire++; if(type==='coin') userData.upgCoin++; if(type==='acc') userData.upgAcc++; saveDB(); renderUpgrades(); } else alert("Money not enough!"); }
-
-        // ================= GAME ENGINE (CORE) =================
-        const canvas = document.getElementById("gameCanvas"); const ctx = canvas.getContext("2d");
-        const scoreElement = document.getElementById("score"); const gameMoneyElement = document.getElementById("game-money");
-        function resizeCanvas() { canvas.width = window.innerWidth; canvas.height = window.innerHeight; }
-        window.addEventListener('resize', resizeCanvas); resizeCanvas();
-
-        let score = 0, earnedMoney = 0, gameActive = false, animationId;
-        let boat = { x: 100, y: 0, w: 120, h: 40, speed: 8 };
-        let playerHp = 100, playerMaxHp = 100;
-        let obstacles = [], bullets = [], enemyBullets = [], particles = [], powerups = [], trails = [], airstrikes = [], bombs = [];
-        let moveUp = false, moveDown = false;
-        let hasShield = false; let multiShotTimer = 0; let shakeTime = 0;
-        let lastSkillTime = 0; let cobraActive = false; let bossActive = false; let boss = null;
-
-        document.getElementById("startBtn").addEventListener("click", startGame); 
-        document.getElementById("retryBtn").addEventListener("click", startGame); 
-        document.getElementById("backToMenuBtn").addEventListener("click", () => { switchMenu("main-menu"); switchBGM("menu"); });
+        function resize() { canvas.width = window.innerWidth; canvas.height = window.innerHeight; }
+        window.onresize = resize; resize();
 
         function startGame() {
-            switchBGM("game"); switchMenu("game"); 
-            let eqId = userData.equipped; currentShipObj = shipData.find(s => s.id === eqId);
-            boat.w = currentShipObj.w; boat.h = currentShipObj.h; boat.speed = currentShipObj.speed; boat.y = canvas.height/2;
-            playerMaxHp = currentShipObj.hp; playerHp = playerMaxHp; updateHpUI();
-            skillBtn.classList.remove("hidden"); skillBtn.innerText = currentShipObj.icon;
-            cobraBtn.classList.toggle("hidden", !currentShipObj.hasCobra);
-            score = 0; earnedMoney = 0; obstacles = []; bullets = []; enemyBullets = []; particles = []; powerups = []; trails = []; airstrikes = []; bombs = [];
-            gameActive = true; cancelAnimationFrame(animationId); loop();
+            forceLandscape();
+            currentShip = shipData.find(s => s.id === userData.equipped);
+            boat.w = currentShip.w; boat.h = currentShip.h; boat.speed = currentShip.speed;
+            boat.y = canvas.height/2;
+            hp = currentShip.hp; score = 0; earnedMoney = 0;
+            obstacles = []; bullets = []; gameActive = true;
+            document.getElementById("skillBtn").innerText = currentShip.icon;
+            document.getElementById("skillBtn").classList.remove("hidden");
+            document.getElementById("cobraBtn").classList.toggle("hidden", !currentShip.hasCobra);
+            switchBGM("game"); switchMenu("game");
+            loop();
         }
 
-        // --- Kontrol Mobile ---
-        const startUp = (e) => { e.preventDefault(); moveUp = true; }, stopUp = () => moveUp = false;
-        const startDown = (e) => { e.preventDefault(); moveDown = true; }, stopDown = () => moveDown = false;
-        document.getElementById("upBtn").addEventListener("touchstart", startUp); document.getElementById("upBtn").addEventListener("touchend", stopUp);
-        document.getElementById("downBtn").addEventListener("touchstart", startDown); document.getElementById("downBtn").addEventListener("touchend", stopDown);
+        document.getElementById("startBtn").onclick = startGame;
+        document.getElementById("retryBtn").onclick = startGame;
+        document.getElementById("backToMenuBtn").onclick = () => { switchMenu("main-menu"); switchBGM("menu"); };
 
-        // (Fungsi loop, draw, update tetap sama seperti sebelumnya...)
-        function spawnExplosion(x, y, color) { playSfx(sfxExp); shakeTime = 15; for(let i=0; i<20; i++) particles.push({ x: x, y: y, vx: (Math.random()-0.5)*15, vy: (Math.random()-0.5)*15, life: 30, color: color || "#ff4400" }); }
-        function updateHpUI() { let pct = Math.max(0, (playerHp / playerMaxHp) * 100); document.getElementById("player-hp-fill").style.width = pct + "%"; }
-        function takeDamage(amount) { if(hasShield) { hasShield = false; return; } playerHp -= amount; updateHpUI(); if(playerHp <= 0) gameOver(); }
-        function gameOver() { gameActive = false; if (score > userData.highscore) userData.highscore = score; userData.money += earnedMoney; saveDB(); switchMenu("game-over-menu"); switchBGM("menu"); }
+        // Kontrol
+        const setU = (v) => moveUp = v; const setD = (v) => moveDown = v;
+        document.getElementById("upBtn").ontouchstart = () => setU(true);
+        document.getElementById("upBtn").ontouchend = () => setU(false);
+        document.getElementById("downBtn").ontouchstart = () => setD(true);
+        document.getElementById("downBtn").ontouchend = () => setD(false);
+
+        function loop() {
+            if(!gameActive) return;
+            update(); draw();
+            animationId = requestAnimationFrame(loop);
+        }
 
         function update() {
-            if (!gameActive) return;
-            if (moveUp && boat.y > 50) boat.y -= boat.speed; if (moveDown && boat.y < canvas.height - 50) boat.y += boat.speed;
-            bullets.forEach((b, i) => { b.x += b.speed; if(b.x > canvas.width) bullets.splice(i, 1); });
-            obstacles.forEach((obs, i) => {
-                obs.x -= obs.spd;
-                if(boat.x < obs.x+obs.w && boat.x+boat.w > obs.x && boat.y < obs.y+obs.h && boat.y+boat.h > obs.y) { obstacles.splice(i,1); takeDamage(20); }
-                if(obs.x < -100) obstacles.splice(i,1);
+            if(moveUp && boat.y > 50) boat.y -= boat.speed;
+            if(moveDown && boat.y < canvas.height - 50) boat.y += boat.speed;
+
+            // Spawn musuh
+            if(Math.random() < 0.03) {
+                obstacles.push({ x: canvas.width + 50, y: Math.random()*(canvas.height-50), w: 40, h: 40, spd: 5 + score/50 });
+            }
+
+            obstacles.forEach((o, i) => {
+                o.x -= o.spd;
+                // Cek Tabrakan
+                if(boat.x < o.x+o.w && boat.x+boat.w > o.x && boat.y < o.y+o.h && boat.y+boat.h > o.y) {
+                    obstacles.splice(i,1); hp -= 20;
+                    document.getElementById("player-hp-fill").style.width = (hp/currentShip.hp * 100) + "%";
+                    if(hp <= 0) endGame();
+                }
+                if(o.x < -100) { obstacles.splice(i,1); score++; }
             });
-            if (Math.random() < 0.03) obstacles.push({ x: canvas.width + 50, y: Math.random() * (canvas.height - 50), w: 40, h: 40, spd: 6 + (score / 20) });
-            score++; scoreElement.innerText = score; earnedMoney = Math.floor(score/10); gameMoneyElement.innerText = earnedMoney;
+
+            document.getElementById("score").innerText = score;
+            earnedMoney = Math.floor(score/5);
+            document.getElementById("game-money").innerText = earnedMoney;
         }
 
         function draw() {
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-            ctx.fillStyle = "white"; ctx.fillRect(boat.x, boat.y, boat.w, boat.h);
-            ctx.fillStyle = "yellow"; bullets.forEach(b => ctx.fillRect(b.x, b.y, 10, 5));
-            ctx.fillStyle = "red"; obstacles.forEach(o => ctx.fillRect(o.x, o.y, o.w, o.h));
+            ctx.clearRect(0,0,canvas.width, canvas.height);
+            // Draw Boat
+            ctx.fillStyle = "white";
+            ctx.fillRect(boat.x, boat.y, boat.w, boat.h);
+            // Draw Obstacles
+            ctx.fillStyle = "red";
+            obstacles.forEach(o => ctx.fillRect(o.x, o.y, o.w, o.h));
         }
 
-        function loop() { if (!gameActive) return; update(); draw(); animationId = requestAnimationFrame(loop); }
+        function endGame() {
+            gameActive = false;
+            userData.money += earnedMoney;
+            db.ref('users/'+currentUser).set(userData);
+            document.getElementById("gameOverDesc").innerText = "Score: " + score + " | Money: $" + earnedMoney;
+            switchMenu("game-over-menu");
+            switchBGM("menu");
+        }
 
-        applyLanguage();
+        document.getElementById("logoutBtn").onclick = () => location.reload();
+
     </script>
 </body>
 </html>
