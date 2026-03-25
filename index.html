@@ -3,414 +3,241 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Warship Racing - Ultimate Online Edition</title>
+    <title>Warship Racing Global - Fix Ultimate</title>
     
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
 
     <style>
         body { margin: 0; overflow: hidden; background: #001a33; font-family: 'Arial', sans-serif; touch-action: none; user-select: none; }
-        #game-container { position: relative; width: 100vw; height: 100vh; background: linear-gradient(#0077be, #004d99); transition: background 2s; }
+        #game-container { position: relative; width: 100vw; height: 100vh; background: #004d99; }
         canvas { display: block; position: absolute; top:0; left:0; z-index: 1; }
         
-        /* Menu Screens - Z-INDEX 1000 agar paling depan */
         .menu-screen { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 26, 51, 0.95); display: flex; flex-direction: column; justify-content: center; align-items: center; z-index: 1000; color: white; text-align: center; }
         .hidden { display: none !important; }
         
-        h1 { font-size: 36px; margin-bottom: 5px; text-shadow: 3px 3px #000; color: #00fbff; letter-spacing: 2px; }
-        p { font-size: 16px; margin-bottom: 15px; color: #ddd; }
+        h1 { font-size: 36px; color: #00fbff; text-shadow: 2px 2px #000; margin-bottom: 10px; }
+        .menu-btn { padding: 12px 25px; font-size: 16px; font-weight: bold; margin: 8px; color: white; border: 3px solid #fff; border-radius: 12px; cursor: pointer; background: #0077be; width: 240px; pointer-events: auto; }
+        .primary-btn { background: #ff4444; } .gold-btn { background: #d4af37; color: #000; } .green-btn { background: #28a745; }
         
-        .menu-btn { padding: 12px 25px; font-size: 16px; font-weight: bold; margin: 6px; color: white; border: 3px solid #fff; border-radius: 12px; cursor: pointer; background: #0077be; width: 240px; pointer-events: auto; }
-        .primary-btn { background: #ff4444; } .gold-btn { background: #d4af37; color: #000; border-color: #ffd700; } .green-btn { background: #28a745; }
-        .admin-btn { background: #8b0000; color: white; border-color: #ff4444; animation: pulse 2s infinite; }
-        @keyframes pulse { 0% { box-shadow: 0 0 0 0 rgba(255,0,0,0.7); } 70% { box-shadow: 0 0 0 10px rgba(255,0,0,0); } 100% { box-shadow: 0 0 0 0 rgba(255,0,0,0); } }
-        
-        input { padding: 12px; margin: 8px; width: 220px; font-size: 16px; border-radius: 8px; border: 2px solid #00fbff; background: #001a33; color: white; text-align: center; outline: none; }
-        .data-box { background: rgba(0,0,0,0.6); border: 2px solid #00fbff; border-radius: 10px; width: 340px; max-height: 250px; overflow-y: auto; margin-bottom: 20px; padding: 15px; }
+        input { padding: 12px; margin: 8px; width: 220px; border-radius: 8px; border: 2px solid #00fbff; background: #001a33; color: white; text-align: center; outline: none; }
+        .data-box { background: rgba(0,0,0,0.6); border: 2px solid #00fbff; border-radius: 10px; width: 340px; max-height: 250px; overflow-y: auto; padding: 15px; margin-bottom: 20px; }
         .shop-item { display: flex; justify-content: space-between; align-items: center; background: rgba(255,255,255,0.1); padding: 10px; margin-bottom: 10px; border-radius: 8px; text-align: left; }
-        .shop-item h3 { margin: 0; font-size: 14px; color: #00fbff; }
-        .buy-btn { padding: 6px 12px; font-size: 11px; border-radius: 5px; cursor: pointer; border: none; font-weight: bold; }
 
-        /* In-Game UI */
         #ui { position: absolute; top: 15px; left: 20px; color: white; font-size: 18px; font-weight: bold; z-index: 100; display: none; text-shadow: 2px 2px #000; }
-        #player-hp-container { width: 200px; height: 12px; border: 2px solid #fff; background: #333; margin-top: 8px; border-radius: 5px; overflow: hidden; }
-        #player-hp-fill { width: 100%; height: 100%; background: #00ffaa; }
-        
+        #hp-bar-bg { width: 200px; height: 12px; background: #333; border: 2px solid #fff; border-radius: 5px; margin-top: 5px; }
+        #hp-bar-fill { width: 100%; height: 100%; background: #00ffaa; }
+
         #controls { position: absolute; right: 30px; bottom: 30px; display: none; flex-direction: column; gap: 15px; z-index: 100; }
         #action-controls { position: absolute; left: 30px; bottom: 30px; display: none; gap: 15px; z-index: 100; }
-        .btn { width: 70px; height: 70px; background: rgba(255, 255, 255, 0.2); border-radius: 50%; display: flex; justify-content: center; align-items: center; color: white; font-size: 30px; border: 3px solid white; cursor: pointer; backdrop-filter: blur(5px); }
-
-        #boss-warning { position: absolute; top: 30%; left: 50%; transform: translateX(-50%); color: red; font-size: 30px; font-weight: bold; display: none; z-index: 50; text-align: center; }
-        #boss-hp-bar { position: absolute; top: 10px; left: 50%; transform: translateX(-50%); width: 300px; height: 15px; background: #333; border: 2px solid white; display: none; z-index: 100; }
-        #loading-overlay { position: absolute; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.9); z-index:9999; display:none; justify-content:center; align-items:center; color:#00fbff; font-weight:bold; }
+        .btn-circle { width: 75px; height: 75px; background: rgba(255, 255, 255, 0.2); border-radius: 50%; display: flex; justify-content: center; align-items: center; color: white; font-size: 30px; border: 3px solid white; cursor: pointer; backdrop-filter: blur(5px); }
     </style>
 </head>
 <body>
-    <div id="game-container">
-        <div id="loading-overlay">MEMUAT DATA...</div>
-        
-        <audio id="bgm-menu" src="https://www.soundhelix.com/examples/mp3/SoundHelix-Song-15.mp3" loop></audio>
-        <audio id="bgm-game" src="https://www.soundhelix.com/examples/mp3/SoundHelix-Song-14.mp3" loop></audio>
 
-        <div id="auth-menu" class="menu-screen">
-            <h1>WARSHIP RACING</h1>
-            <input type="text" id="usernameInput" placeholder="Username">
-            <input type="password" id="passwordInput" placeholder="Password">
-            <button class="menu-btn primary-btn" id="loginBtn">LOGIN</button>
-            <button class="menu-btn" id="registerBtn">DAFTAR</button>
-            <p id="authMsg" style="color:red;"></p>
-        </div>
-
-        <div id="main-menu" class="menu-screen hidden">
-            <h1>MAIN MENU</h1>
-            <p>Kapten: <span id="playerName" style="color:#00fbff;"></span> | Uang: $<span id="menuMoney">0</span></p>
-            <button class="menu-btn primary-btn" id="startBtn">START GAME</button>
-            <button class="menu-btn gold-btn" id="shopBtn">GARASI</button>
-            <button class="menu-btn green-btn" id="upgBtn">UPGRADE</button>
-            <button class="menu-btn" id="lbBtn">LEADERBOARD</button>
-            <button class="menu-btn admin-btn hidden" id="adminBtn">⚙️ ADMIN PANEL</button>
-            <button class="menu-btn" id="creditsBtn">CREDITS</button>
-            <button class="menu-btn" id="logoutBtn" style="background:#555">LOGOUT</button>
-        </div>
-
-        <div id="shop-menu" class="menu-screen hidden">
-            <h1>GARASI</h1>
-            <div class="data-box" id="shop-box"></div>
-            <button class="menu-btn" onclick="openMenu('main-menu')">KEMBALI</button>
-        </div>
-
-        <div id="upg-menu" class="menu-screen hidden">
-            <h1>UPGRADE</h1>
-            <div class="data-box" id="upg-box"></div>
-            <button class="menu-btn" onclick="openMenu('main-menu')">KEMBALI</button>
-        </div>
-
-        <div id="credits-menu" class="menu-screen hidden">
-            <h1>CREDITS</h1>
-            <p>Game Developer & Designer</p>
-            <h2 style="color:#00fbff;">@windy</h2>
-            <p>Server: Firebase Global</p>
-            <button class="menu-btn primary-btn" onclick="openMenu('main-menu')">KEMBALI</button>
-        </div>
-
-        <div id="admin-menu" class="menu-screen hidden">
-            <h1>ADMIN PANEL</h1>
-            <input type="text" id="targetUser" placeholder="Username Target">
-            <input type="number" id="targetAmount" placeholder="Jumlah Uang">
-            <button class="menu-btn green-btn" id="giveMoneyBtn">KIRIM UANG</button>
-            <button class="menu-btn" onclick="openMenu('main-menu')">KEMBALI</button>
-        </div>
-
-        <div id="lb-menu" class="menu-screen hidden">
-            <h1>GLOBAL LEADERBOARD</h1>
-            <div class="data-box" id="lb-box"></div>
-            <button class="menu-btn" onclick="openMenu('main-menu')">KEMBALI</button>
-        </div>
-
-        <div id="game-over-menu" class="menu-screen hidden">
-            <h1 style="color:red">SHIP DESTROYED!</h1>
-            <p id="gameOverStats"></p>
-            <button class="menu-btn primary-btn" id="retryBtn">MAIN LAGI</button>
-            <button class="menu-btn" onclick="location.reload()">MENU UTAMA</button>
-        </div>
-
-        <div id="ui">
-            SCORE: <span id="scoreText">0</span> | MONEY: $<span id="moneyText">0</span>
-            <div id="player-hp-container"><div id="player-hp-fill"></div></div>
-        </div>
-        <div id="boss-warning">⚠️ WARNING: BOSS APPROACHING ⚠️</div>
-        <div id="boss-hp-bar"><div id="boss-hp-fill" style="width:100%; height:100%; background:red"></div></div>
-
-        <canvas id="gameCanvas"></canvas>
-
-        <div id="controls">
-            <div class="btn" id="upBtn">▲</div>
-            <div class="btn" id="downBtn">▼</div>
-        </div>
-        <div id="action-controls">
-            <div class="btn hidden" id="skillBtn">⚡</div>
-            <div class="btn hidden" id="cobraBtn">✈️</div>
-        </div>
+<div id="game-container">
+    <div id="auth-menu" class="menu-screen">
+        <h1>WARSHIP RACING</h1>
+        <input type="text" id="usernameInput" placeholder="Username">
+        <input type="password" id="passwordInput" placeholder="Password">
+        <button class="menu-btn primary-btn" id="loginBtn">LOGIN</button>
+        <button class="menu-btn" id="registerBtn">DAFTAR GLOBAL</button>
+        <p id="authMsg" style="color:red;"></p>
     </div>
 
-    <script>
-        // 1. DATABASE CONFIG
-        const firebaseConfig = { databaseURL: "https://warshiprace-default-rtdb.firebaseio.com/" };
-        firebase.initializeApp(firebaseConfig);
-        const db = firebase.database();
+    <div id="main-menu" class="menu-screen hidden">
+        <h1>MENU UTAMA</h1>
+        <p>Kapten: <span id="pName" style="color:#00fbff;"></span> | Uang: $<span id="pMoney">0</span></p>
+        <button class="menu-btn primary-btn" id="startBtn">START GAME</button>
+        <button class="menu-btn gold-btn" id="shopBtn">GARASI</button>
+        <button class="menu-btn green-btn" id="upgBtn">UPGRADE</button>
+        <button class="menu-btn" id="creditsBtn">CREDITS</button>
+        <button class="menu-btn" id="logoutBtn" style="background:#555">LOGOUT</button>
+    </div>
 
-        // 2. DATA
-        const shipData = [
-            { id: 0, name: "Speedboat Klasik", price: 0, w: 100, h: 30, spd: 8, hp: 100, skill: "DASH", icon: "⚡", cd: 3 },
-            { id: 1, name: "Jet Ski", price: 500, w: 60, h: 25, spd: 10, hp: 60, skill: "BOOST", icon: "🔥", cd: 5 },
-            { id: 2, name: "Kapal Bajak Laut", price: 2500, w: 140, h: 80, spd: 6, hp: 200, skill: "CANNON", icon: "💣", cd: 4 },
-            { id: 3, name: "Luxury Yacht", price: 7500, w: 160, h: 50, spd: 7, hp: 150, skill: "HEAL", icon: "🔧", cd: 10 },
-            { id: 5, name: "USS Arleigh Burke", price: 25000, w: 200, h: 50, spd: 6, hp: 250, skill: "SHOOT", icon: "🎯", cd: 0.5 },
-            { id: 4, name: "Jet Tempur Su-57", price: 50000, w: 130, h: 35, spd: 14, hp: 150, skill: "SHOOT", icon: "🎯", cd: 0.5, hasCobra: true },
-            { id: 6, name: "CVN-78 G. R. Ford", price: 99999999, w: 300, h: 80, spd: 5, hp: 500, skill: "AIRSTRIKE", icon: "🛩️", cd: 12, isAdmin: true }
-        ];
+    <div id="credits-menu" class="menu-screen hidden">
+        <h1>CREDITS</h1>
+        <p>Game Developer & Designer</p>
+        <h2 style="color:#00fbff;">@windy</h2>
+        <button class="menu-btn primary-btn" onclick="showMenu('main-menu')">BACK</button>
+    </div>
 
-        let currentUser = null;
-        let userData = null;
-        const bgmMenu = document.getElementById('bgm-menu');
-        const bgmGame = document.getElementById('bgm-game');
-        bgmMenu.volume = 0.3; bgmGame.volume = 0.3;
+    <div id="shop-menu" class="menu-screen hidden">
+        <h1>GARASI</h1>
+        <div class="data-box" id="shop-box"></div>
+        <button class="menu-btn" onclick="showMenu('main-menu')">BACK</button>
+    </div>
 
-        // 3. MENU SYSTEM
-        function openMenu(id) {
-            document.querySelectorAll('.menu-screen').forEach(m => m.classList.add('hidden'));
-            document.getElementById(id).classList.remove('hidden');
-            if(id === 'shop-menu') renderShop();
-            if(id === 'upg-menu') renderUpgrades();
-            if(id === 'lb-menu') renderLeaderboard();
-        }
+    <div id="ui">
+        SCORE: <span id="scoreText">0</span> | MONEY: $<span id="moneyText">0</span>
+        <div id="hp-bar-bg"><div id="hp-bar-fill"></div></div>
+    </div>
 
-        // 4. AUTH LOGIC
-        document.getElementById('registerBtn').onclick = () => {
-            let u = document.getElementById('usernameInput').value.trim().toLowerCase();
-            let p = document.getElementById('passwordInput').value.trim();
-            if(!u || !p) return;
-            document.getElementById('loading-overlay').style.display = 'flex';
-            db.ref('users/'+u).once('value').then(snap => {
-                if(snap.exists()) { alert("User ada!"); document.getElementById('loading-overlay').style.display = 'none'; }
-                else {
-                    db.ref('users/'+u).set({ password:p, money:1000, highscore:0, owned:[0], equipped:0, upgAcc:0, upgFire:0, upgCoin:0 })
-                    .then(() => { alert("Sukses!"); document.getElementById('loading-overlay').style.display = 'none'; });
-                }
-            });
-        };
+    <canvas id="gameCanvas"></canvas>
 
-        document.getElementById('loginBtn').onclick = () => {
-            let u = document.getElementById('usernameInput').value.trim().toLowerCase();
-            let p = document.getElementById('passwordInput').value.trim();
-            document.getElementById('loading-overlay').style.display = 'flex';
-            db.ref('users/'+u).once('value').then(snap => {
-                document.getElementById('loading-overlay').style.display = 'none';
-                if(snap.exists() && snap.val().password === p) {
-                    currentUser = u; userData = snap.val();
-                    if(!userData.owned) userData.owned = [0];
-                    document.getElementById('playerName').innerText = u;
-                    document.getElementById('menuMoney').innerText = userData.money;
-                    if(u === 'devloper') document.getElementById('adminBtn').classList.remove('hidden');
-                    bgmMenu.play();
-                    openMenu('main-menu');
-                } else { alert("Gagal!"); }
-            });
-        };
+    <div id="controls">
+        <div class="btn-circle" id="upBtn">▲</div>
+        <div class="btn-circle" id="downBtn">▼</div>
+    </div>
+    <div id="action-controls">
+        <div class="btn-circle hidden" id="skillBtn">⚡</div>
+    </div>
+</div>
 
-        // 5. SHOP & UPGRADE
-        function renderShop() {
-            let box = document.getElementById('shop-box'); box.innerHTML = "";
-            shipData.forEach(s => {
-                if(s.isAdmin && currentUser !== 'devloper') return;
-                let div = document.createElement('div'); div.className = 'shop-item';
-                let isOwned = userData.owned.includes(s.id);
-                let btnText = isOwned ? (userData.equipped == s.id ? "DIPAKAI" : "PAKAI") : "BELI $"+s.price;
-                div.innerHTML = `<div><h3>${s.name}</h3><p>HP: ${s.hp}</p></div><button class="buy-btn" onclick="handleShop(${s.id}, ${s.price})">${btnText}</button>`;
-                box.appendChild(div);
-            });
-        }
-        window.handleShop = (id, price) => {
-            if(userData.owned.includes(id)) { userData.equipped = id; }
-            else if(userData.money >= price) { userData.money -= price; userData.owned.push(id); userData.equipped = id; }
-            db.ref('users/'+currentUser).set(userData); document.getElementById('menuMoney').innerText = userData.money; renderShop();
-        };
+<script>
+    // 1. CONFIG
+    const firebaseConfig = { databaseURL: "https://warshiprace-default-rtdb.firebaseio.com/" };
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
 
-        function renderUpgrades() {
-            let box = document.getElementById('upg-box'); box.innerHTML = "";
-            let upgs = [
-                { id: 'upgAcc', n: "Accuracy", c: 1000 },
-                { id: 'upgFire', n: "Fire Rate", c: 800 },
-                { id: 'upgCoin', n: "Coin Multi", c: 1200 }
-            ];
-            upgs.forEach(u => {
-                let lvl = userData[u.id] || 0;
-                let cost = u.c + (lvl * 500);
-                let div = document.createElement('div'); div.className = 'shop-item';
-                div.innerHTML = `<div><h3>${u.n} (Lvl ${lvl})</h3></div><button class="buy-btn" onclick="handleUpg('${u.id}', ${cost})">UP $${cost}</button>`;
-                box.appendChild(div);
-            });
-        }
-        window.handleUpg = (id, cost) => {
-            if(userData.money >= cost && (userData[id]||0) < 5) { userData.money -= cost; userData[id] = (userData[id]||0) + 1; db.ref('users/'+currentUser).set(userData); renderUpgrades(); }
-        };
+    const shipData = [
+        { id: 0, name: "Speedboat", spd: 8, hp: 100, price: 0, icon: "⚡", skill: "DASH" },
+        { id: 1, name: "Jet Ski", spd: 11, hp: 60, price: 500, icon: "🔥", skill: "BOOST" },
+        { id: 5, name: "Arleigh Burke", spd: 7, hp: 250, price: 25000, icon: "🎯", skill: "SHOOT" },
+        { id: 6, name: "CVN-78 Admin", spd: 5, hp: 500, price: 999999, icon: "🛩️", skill: "AIRSTRIKE", isAdmin: true }
+    ];
 
-        function renderLeaderboard() {
-            db.ref('users').once('value').then(snap => {
-                let box = document.getElementById('lb-box'); box.innerHTML = "";
-                let arr = [];
-                snap.forEach(s => { arr.push({ n: s.key, s: s.val().highscore }); });
-                arr.sort((a,b) => b.s - a.s).slice(0, 10).forEach((p, i) => {
-                    box.innerHTML += `<div style="display:flex; justify-content:space-between; margin-bottom:5px"><span>#${i+1} ${p.n}</span><span>${p.s}</span></div>`;
-                });
-            });
-        }
+    let currentUser = null, userData = null;
+    const canvas = document.getElementById("gameCanvas");
+    const ctx = canvas.getContext("2d");
 
-        // 6. ADMIN
-        document.getElementById('adminBtn').onclick = () => openMenu('admin-menu');
-        document.getElementById('giveMoneyBtn').onclick = () => {
-            let t = document.getElementById('targetUser').value.trim().toLowerCase();
-            let a = parseInt(document.getElementById('targetAmount').value);
-            db.ref('users/'+t).once('value').then(s => {
-                if(s.exists()) {
-                    let d = s.val(); d.money += a; db.ref('users/'+t).set(d); alert("Sukses!");
-                }
-            });
-        };
+    function resize() { canvas.width = window.innerWidth; canvas.height = window.innerHeight; }
+    window.onresize = resize; resize();
 
-        // 7. GAME ENGINE
-        const canvas = document.getElementById("gameCanvas"); const ctx = canvas.getContext("2d");
-        function resize() { canvas.width = window.innerWidth; canvas.height = window.innerHeight; }
-        window.onresize = resize; resize();
+    function showMenu(id) {
+        document.querySelectorAll('.menu-screen').forEach(m => m.classList.add('hidden'));
+        document.getElementById(id).classList.remove('hidden');
+    }
 
-        let gameActive = false, score = 0, earnedMoney = 0, playerHp = 100, playerMaxHp = 100;
-        let boat = { x: 100, y: 0, w: 0, h: 0, spd: 0 };
-        let obstacles = [], bullets = [], enemyBullets = [], bombs = [], particles = [], currentShip = null;
-        let moveUp = false, moveDown = false, lastShot = 0, lastSkill = 0, cobraActive = false, boss = null;
+    // 2. AUTH
+    document.getElementById('registerBtn').onclick = () => {
+        let u = document.getElementById('usernameInput').value.trim().toLowerCase();
+        let p = document.getElementById('passwordInput').value.trim();
+        if(!u || !p) return;
+        db.ref('users/'+u).set({ password:p, money:1000, highscore:0, owned:[0], equipped:0 }).then(() => alert("Berhasil!"));
+    };
 
-        document.getElementById('startBtn').onclick = startGame;
-        document.getElementById('retryBtn').onclick = startGame;
+    document.getElementById('loginBtn').onclick = () => {
+        let u = document.getElementById('usernameInput').value.trim().toLowerCase();
+        let p = document.getElementById('passwordInput').value.trim();
+        db.ref('users/'+u).once('value').then(snap => {
+            if(snap.exists() && snap.val().password === p) {
+                currentUser = u; userData = snap.val();
+                if(!userData.owned) userData.owned = [0];
+                document.getElementById('pName').innerText = u;
+                document.getElementById('pMoney').innerText = userData.money;
+                showMenu('main-menu');
+            } else { alert("Login Salah!"); }
+        });
+    };
 
-        function startGame() {
-            gameActive = true; score = 0; earnedMoney = 0;
-            currentShip = shipData.find(s => s.id == userData.equipped);
-            boat.spd = currentShip.spd; boat.w = currentShip.w; boat.h = currentShip.h;
-            playerMaxHp = currentShip.hp; playerHp = playerMaxHp; boat.y = canvas.height/2;
-            obstacles = []; bullets = []; enemyBullets = []; bombs = []; particles = []; boss = null;
-            document.getElementById('skillBtn').classList.remove('hidden');
-            document.getElementById('skillBtn').innerText = currentShip.icon;
-            document.getElementById('cobraBtn').classList.toggle('hidden', !currentShip.hasCobra);
-            bgmMenu.pause(); bgmGame.currentTime = 0; bgmGame.play();
-            switchMenu('game'); loop();
-        }
+    document.getElementById('logoutBtn').onclick = () => { currentUser = null; showMenu('auth-menu'); };
 
-        function switchMenu(id) {
-            document.querySelectorAll('.menu-screen').forEach(m => m.classList.add('hidden'));
-            document.getElementById('ui').style.display = (id==='game') ? 'block' : 'none';
-            document.getElementById('controls').style.display = (id==='game') ? 'flex' : 'none';
-            document.getElementById('action-controls').style.display = (id==='game') ? 'flex' : 'none';
-        }
+    // 3. SHOP
+    document.getElementById('shopBtn').onclick = () => {
+        const box = document.getElementById('shop-box'); box.innerHTML = "";
+        shipData.forEach(s => {
+            if(s.isAdmin && currentUser !== 'devloper') return;
+            let isOwned = userData.owned.includes(s.id);
+            let div = document.createElement('div'); div.className = 'shop-item';
+            div.innerHTML = `<div><b>${s.name}</b></div><button class="menu-btn" style="width:100px" onclick="buy(${s.id}, ${s.price})">${isOwned ? "PAKAI" : "BELI"}</button>`;
+            box.appendChild(div);
+        });
+        showMenu('shop-menu');
+    };
 
-        // --- SKILL LOGIC ---
-        function useSkill() {
-            let now = Date.now();
-            if(now - lastSkill < currentShip.cd * 1000) return;
-            lastSkill = now;
-            if(currentShip.skill === "AIRSTRIKE") {
-                for(let i=0; i<3; i++) {
-                    bullets.push({ x: boat.x, y: boat.y + (i*30) - 30, spd: 20, vy: 0, type: 'f18', lastBomb: 0 });
-                }
-            } else if(currentShip.skill === "DASH") {
-                boat.x += 150; setTimeout(() => boat.x = 100, 300);
-            } else if(currentShip.skill === "HEAL") {
-                playerHp = Math.min(playerMaxHp, playerHp + 50);
-            } else if(currentShip.skill === "BOOST") {
-                boat.spd *= 2; setTimeout(() => boat.spd = currentShip.spd, 3000);
+    window.buy = (id, price) => {
+        if(userData.owned.includes(id)) { userData.equipped = id; }
+        else if(userData.money >= price) { userData.money -= price; userData.owned.push(id); userData.equipped = id; }
+        db.ref('users/'+currentUser).set(userData);
+        document.getElementById('pMoney').innerText = userData.money;
+        showMenu('main-menu');
+    };
+
+    // 4. GAME ENGINE
+    let gameActive = false, score = 0, earnedMoney = 0, hp = 100, maxHp = 100;
+    let boatY = 0, obstacles = [], bullets = [], currentShip = null;
+    let moveUp = false, moveDown = false;
+
+    document.getElementById('startBtn').onclick = () => {
+        currentShip = shipData.find(s => s.id == userData.equipped);
+        score = 0; earnedMoney = 0; hp = currentShip.hp; maxHp = currentShip.hp;
+        boatY = canvas.height/2; obstacles = []; bullets = [];
+        gameActive = true;
+        document.getElementById('ui').style.display = 'block';
+        document.getElementById('controls').style.display = 'flex';
+        document.getElementById('action-controls').style.display = 'flex';
+        document.getElementById('skillBtn').classList.remove('hidden');
+        document.getElementById('skillBtn').innerText = currentShip.icon;
+        document.querySelectorAll('.menu-screen').forEach(m => m.classList.add('hidden'));
+        loop();
+    };
+
+    function loop() {
+        if(!gameActive) return;
+        update();
+        draw();
+        requestAnimationFrame(loop);
+    }
+
+    function update() {
+        if(moveUp && boatY > 50) boatY -= currentShip.spd;
+        if(moveDown && boatY < canvas.height-50) boatY += currentShip.spd;
+
+        if(Math.random() < 0.03) obstacles.push({ x: canvas.width, y: Math.random()*canvas.height, spd: 6+(score/50) });
+
+        obstacles.forEach((o, i) => {
+            o.x -= o.spd;
+            if(o.x < -50) { obstacles.splice(i, 1); score++; earnedMoney += 10; }
+            if(Math.abs(o.x - 120) < 40 && Math.abs(o.y - boatY) < 30) {
+                hp -= 20; obstacles.splice(i, 1);
+                if(hp <= 0) { gameActive = false; alert("Game Over! Skor: " + score); finish(); }
             }
-        }
+        });
 
-        document.getElementById('upBtn').ontouchstart = () => moveUp = true;
-        document.getElementById('upBtn').ontouchend = () => moveUp = false;
-        document.getElementById('downBtn').ontouchstart = () => moveDown = true;
-        document.getElementById('downBtn').ontouchend = () => moveDown = false;
-        document.getElementById('skillBtn').onclick = useSkill;
-        document.getElementById('cobraBtn').onclick = () => { cobraActive = true; setTimeout(()=>cobraActive=false, 1500); };
-        window.onkeydown = (e) => { if(e.code==='Space') useSkill(); if(e.key==='w') moveUp=true; if(e.key==='s') moveDown=true; };
-        window.onkeyup = (e) => { if(e.key==='w') moveUp=false; if(e.key==='s') moveDown=false; };
-
-        function loop() {
-            if(!gameActive) return;
-            update();
-            draw();
-            requestAnimationFrame(loop);
-        }
-
-        function update() {
-            if(moveUp && boat.y > 50) boat.y -= boat.spd;
-            if(moveDown && boat.y < canvas.height-50) boat.y += boat.spd;
-
-            // Bullets & Airstrike Logic
-            bullets.forEach((b, i) => {
-                b.x += b.spd; b.y += b.vy;
-                if(b.type === 'f18' && Date.now() - b.lastBomb > 200) {
-                    bombs.push({ x: b.x, y: b.y, vy: 5 }); b.lastBomb = Date.now();
-                }
-                if(b.x > canvas.width) bullets.splice(i, 1);
-            });
-
-            // Bombs
-            bombs.forEach((bm, i) => {
-                bm.y += 5;
-                if(bm.y > canvas.height) bombs.splice(i, 1);
-                obstacles.forEach((o, oi) => {
-                    if(Math.abs(bm.x - o.x) < 50 && Math.abs(bm.y - o.y) < 50) {
-                        obstacles.splice(oi, 1); bombs.splice(i, 1); score++; earnedMoney += 10;
-                    }
-                });
-            });
-
-            // Obstacles
-            if(Math.random() < 0.03) obstacles.push({ x: canvas.width, y: Math.random()*canvas.height, spd: 5+(score/50), w: 40, h: 40 });
-            obstacles.forEach((o, i) => {
-                o.x -= o.spd;
-                if(o.x < -50) obstacles.splice(i,1);
-                // Collision
-                if(Math.abs(boat.x - o.x) < boat.w/2 && Math.abs(boat.y - o.y) < boat.h/2 && !cobraActive) {
-                    playerHp -= 20; obstacles.splice(i,1);
-                    if(playerHp <= 0) endGame();
+        bullets.forEach((b, i) => {
+            b.x += 15;
+            if(b.x > canvas.width) bullets.splice(i, 1);
+            obstacles.forEach((o, oi) => {
+                if(Math.abs(b.x - o.x) < 40 && Math.abs(b.y - o.y) < 40) {
+                    obstacles.splice(oi, 1); bullets.splice(i, 1); score++; earnedMoney += 20;
                 }
             });
+        });
 
-            // Boss Trigger
-            if(score > 0 && score % 100 === 0 && !boss) {
-                boss = { x: canvas.width, y: canvas.height/2, hp: 500+(score), maxHp: 500+(score) };
-                document.getElementById('boss-hp-bar').style.display = 'block';
-            }
-            if(boss) {
-                if(boss.x > canvas.width - 200) boss.x -= 2;
-                document.getElementById('boss-hp-fill').style.width = (boss.hp / boss.maxHp * 100) + "%";
-                bullets.forEach((b, bi) => {
-                    if(Math.abs(b.x - boss.x) < 100 && Math.abs(b.y - boss.y) < 50) {
-                        boss.hp -= 10; bullets.splice(bi, 1);
-                        if(boss.hp <= 0) { boss = null; score += 50; earnedMoney += 500; document.getElementById('boss-hp-bar').style.display='none'; }
-                    }
-                });
-            }
+        document.getElementById('scoreText').innerText = score;
+        document.getElementById('moneyText').innerText = earnedMoney;
+        document.getElementById('hp-bar-fill').style.width = (hp/maxHp*100) + "%";
+    }
 
-            document.getElementById('scoreText').innerText = score;
-            document.getElementById('moneyText').innerText = earnedMoney;
-            document.getElementById('player-hp-fill').style.width = (playerHp/playerMaxHp*100) + "%";
-        }
+    function draw() {
+        ctx.clearRect(0,0, canvas.width, canvas.height);
+        // Player (Sederhana agar tidak crash)
+        ctx.fillStyle = "#00fbff";
+        ctx.fillRect(100, boatY-20, 60, 30);
+        // Obstacles
+        ctx.fillStyle = "red";
+        obstacles.forEach(o => { ctx.beginPath(); ctx.arc(o.x, o.y, 20, 0, 7); ctx.fill(); });
+        // Bullets
+        ctx.fillStyle = "yellow";
+        bullets.forEach(b => ctx.fillRect(b.x, b.y, 10, 4));
+    }
 
-        function draw() {
-            ctx.clearRect(0,0, canvas.width, canvas.height);
-            // Player
-            ctx.fillStyle = cobraActive ? "cyan" : "white";
-            ctx.fillRect(boat.x - boat.w/2, boat.y - boat.h/2, boat.w, boat.h);
-            // Bullets
-            ctx.fillStyle = "yellow";
-            bullets.forEach(b => {
-                if(b.type === 'f18') ctx.fillStyle = "silver";
-                ctx.fillRect(b.x, b.y, 10, 5);
-            });
-            // Bombs
-            ctx.fillStyle = "black";
-            bombs.forEach(bm => ctx.beginPath() || ctx.arc(bm.x, bm.y, 5, 0, 7) || ctx.fill());
-            // Obstacles
-            ctx.fillStyle = "red";
-            obstacles.forEach(o => ctx.fillRect(o.x, o.y, o.w, o.h));
-            // Boss
-            if(boss) { ctx.fillStyle = "purple"; ctx.fillRect(boss.x, boss.y-50, 150, 100); }
-        }
+    function finish() {
+        if(score > userData.highscore) userData.highscore = score;
+        userData.money += earnedMoney;
+        db.ref('users/'+currentUser).set(userData);
+        location.reload();
+    }
 
-        function endGame() {
-            gameActive = false;
-            if(score > userData.highscore) userData.highscore = score;
-            userData.money += earnedMoney;
-            db.ref('users/'+currentUser).set(userData);
-            document.getElementById('gameOverStats').innerText = `Skor: ${score} | Uang: $${earnedMoney}`;
-            openMenu('game-over-menu');
-        }
-    </script>
+    // Controls
+    document.getElementById('upBtn').ontouchstart = () => moveUp = true;
+    document.getElementById('upBtn').ontouchend = () => moveUp = false;
+    document.getElementById('downBtn').ontouchstart = () => moveDown = true;
+    document.getElementById('downBtn').ontouchend = () => moveDown = false;
+    document.getElementById('skillBtn').onclick = () => {
+        bullets.push({ x: 160, y: boatY, spd: 15 });
+    };
+</script>
 </body>
 </html>
